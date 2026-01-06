@@ -1,3 +1,22 @@
+<#!
+.SYNOPSIS
+Exports Azure Network Security Groups (NSGs) and their rules to a timestamped CSV.
+
+.DESCRIPTION
+Connects to Azure (if needed), sets the specified subscription context, enumerates all Network Security Groups,
+and exports a combined NSG + rule report (one row per rule) to a CSV file. The export includes basic NSG
+metadata, associations (subnets/NICs), rule properties, and a simple redundancy marker.
+
+.PARAMETER SubscriptionId
+The Azure subscription ID (GUID) to query.
+
+.EXAMPLE
+./nsgs.ps1 -SubscriptionId "00000000-0000-0000-0000-000000000000"
+
+.NOTES
+Requires the Az PowerShell modules (at minimum: Az.Accounts and Az.Network) and permissions to read NSGs.
+#>
+
 param(
     [Parameter(Mandatory = $true, HelpMessage = 'Azure subscription ID (GUID)')]
     [ValidateNotNullOrEmpty()]
