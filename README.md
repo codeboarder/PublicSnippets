@@ -12,10 +12,14 @@ This repo is a grab-bag of small utilities (primarily PowerShell) that can be ru
 
 ## Project structure
 
+See `PowerShell/README.md` for details and usage examples for each script.
+
 ```text
 PublicSnippets/
-  Powershell/
+  PowerShell/
+    fwflowlog_toptalkers.ps1
     subscription_nsg_inventory.ps1
     subscription_quota_insights.ps1
+    resource_sku_insights.ps1
     output/ # generated CSV exports
 ```

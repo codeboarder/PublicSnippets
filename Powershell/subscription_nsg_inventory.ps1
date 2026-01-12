@@ -11,7 +11,7 @@ metadata, associations (subnets/NICs), rule properties, and a simple redundancy 
 The Azure subscription ID (GUID) to query.
 
 .EXAMPLE
-./nsgs.ps1 -SubscriptionId "00000000-0000-0000-0000-000000000000"
+./subscription_nsg_inventory.ps1 -SubscriptionId "00000000-0000-0000-0000-000000000000"
 
 .NOTES
 Requires the Az PowerShell modules (at minimum: Az.Accounts and Az.Network) and permissions to read NSGs.
