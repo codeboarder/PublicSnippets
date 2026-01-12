@@ -80,7 +80,7 @@ param(
   [switch]$SaveCsv
 )
 
-function Ensure-Module {
+function Install-RequiredModule {
   param([string]$Name)
   if (-not (Get-Module -ListAvailable -Name $Name)) {
     Write-Host "Installing module $Name ..." -ForegroundColor Yellow
@@ -90,8 +90,8 @@ function Ensure-Module {
 }
 
 # Auth & subscription
-Ensure-Module -Name Az.Accounts
-Ensure-Module -Name Az.OperationalInsights
+Install-RequiredModule -Name Az.Accounts
+Install-RequiredModule -Name Az.OperationalInsights
 
 Write-Host "Connecting to Azure..." -ForegroundColor Cyan
 Connect-AzAccount -ErrorAction Stop | Out-Null
