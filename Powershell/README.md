@@ -5,6 +5,7 @@ My small, self-contained scripts and snippets. This code comes with no guarantee
 ## Scripts
 
 - `PowerShell/fwflowlog_toptalkers.ps1`: Identify Azure Firewall top talkers (sources/destinations) from Log Analytics (KQL).
+- `PowerShell/subscription_storage_capacityusage.ps1`: Report Storage Account Used Capacity and Blob Capacity (Azure Monitor metrics).
 - `PowerShell/subscription_nsg_inventory.ps1`: Export NSG inventory + rules to CSV.
 - `PowerShell/subscription_quota_insights.ps1`: Export portal-style usage/quota insights to CSV.
 - `PowerShell/resource_sku_insights.ps1`: Interactive Azure VM SKU insights (by series/region/restriction).
@@ -94,6 +95,37 @@ From the `PowerShell/` folder:
 - Only exports rows where `CurrentValue > 0`
 - Includes `Trigger_Quota_Request` which is `true` when `(CurrentValue / Limit) > 0.1`
 - Columns include: `ProviderNamespace`, `Location`, `QuotaName`, `QuotaId`, `CurrentValue`, `Limit`, `Unit`, `PercentUsed`, `ProvisionedCount`, `Trigger_Quota_Request`
+
+## Subscription storage capacity usage (`PowerShell/subscription_storage_capacityusage.ps1`)
+
+Lists storage accounts in a subscription and queries Azure Monitor Metrics to report:
+
+- `UsedCapacityGB`: Account-level used capacity (all services)
+- `BlobCapacityGB`: Blob-service-only capacity
+
+Notes:
+
+- Capacity metrics are sampled hourly (`PT1H`). The script queries a lookback window (`$LookbackHours`) and returns the most recent datapoint.
+- Values are output in **decimal GB** (1 GB = 1,000,000,000 bytes).
+
+### Prerequisites (Storage capacity usage)
+
+- Azure CLI installed (`az`)
+- Logged in to Azure CLI (`az login`)
+- Reader (or higher) on the subscription
+- Optional: set the desired subscription (`az account set -s <subscriptionId>`)
+
+### Run (Storage capacity usage)
+
+From the `PowerShell/` folder:
+
+```powershell
+./subscription_storage_capacityusage.ps1
+```
+
+### Output (Storage capacity usage)
+
+- Prints a table with: `StorageAccount`, `ResourceGroup`, `Location`, `UsedCapacityGB`, `BlobCapacityGB`
 
 ## Resource SKU insights (`PowerShell/resource_sku_insights.ps1`)
 

@@ -18,6 +18,7 @@ See `PowerShell/README.md` for details and usage examples for each script.
 PublicSnippets/
   PowerShell/
     fwflowlog_toptalkers.ps1
+    subscription_storage_capacityusage.ps1
     subscription_nsg_inventory.ps1
     subscription_quota_insights.ps1
     resource_sku_insights.ps1
