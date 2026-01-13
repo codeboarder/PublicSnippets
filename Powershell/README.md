@@ -100,8 +100,10 @@ From the `PowerShell/` folder:
 
 Lists storage accounts in a subscription and queries Azure Monitor Metrics to report:
 
-- `UsedCapacityGB`: Account-level used capacity (all services)
-- `BlobCapacityGB`: Blob-service-only capacity
+- `AccountUsedCapacityGB`: Account-level used capacity (all services)
+- `BlobUsedCapacityGB`: Blob-service-only capacity
+- `AccountMaxCapacityGB`: Planning max capacity (only populated for Standard tier)
+- `AccountAvailableCapacityGB`: Max minus used (only when max is known)
 
 Notes:
 
@@ -126,7 +128,7 @@ From the `PowerShell/` folder:
 ### Output (Storage capacity usage)
 
 - Writes a CSV to: `PowerShell/output/storage-capacity-export-<yyyyMMdd-HHmmss>.csv`
-- Columns include: `StorageAccount`, `ResourceGroup`, `Location`, `UsedCapacityGB`, `BlobCapacityGB`
+- Columns include: `StorageAccount`, `ResourceGroup`, `Location`, `AccountUsedCapacityGB`, `BlobUsedCapacityGB`, `AccountMaxCapacityGB`, `AccountAvailableCapacityGB`
 
 ## Resource SKU insights (`PowerShell/resource_sku_insights.ps1`)
 

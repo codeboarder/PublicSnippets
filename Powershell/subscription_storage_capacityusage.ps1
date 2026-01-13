@@ -1,27 +1,41 @@
-<#!
+<#
 .SYNOPSIS
 Exports Azure Storage capacity metrics (account + blob) to a timestamped CSV.
 
 .DESCRIPTION
-Uses Azure CLI authentication to obtain an ARM bearer token, enumerates all storage accounts in the current
-subscription, and queries Azure Monitor Metrics to capture:
+Obtains an ARM bearer token via Azure CLI (`az account get-access-token`), enumerates all storage accounts in
+the current Azure CLI subscription context, and queries Azure Monitor Metrics for:
 
-- UsedCapacity (account scope: Microsoft.Storage/storageAccounts)
-- BlobCapacity (blob service scope: Microsoft.Storage/storageAccounts/blobServices)
+- UsedCapacity (storage account scope: Microsoft.Storage/storageAccounts)
+- BlobCapacity (blob service scope: Microsoft.Storage/storageAccounts/blobServices at blobServices/default)
 
-Capacity metrics are sampled hourly (PT1H). The script queries a lookback window ($LookbackHours) and returns
-the most recent datapoint per storage account.
+Metrics are sampled hourly (default interval: PT1H). The script queries a lookback window (see `$LookbackHours`)
+and returns the most recent non-null datapoint per storage account.
 
-Output is written to PowerShell/output as a timestamped CSV.
+Columns include:
+- StorageAccount
+- ResourceGroup
+- Location
+- AccountUsedCapacityGB (decimal GB, 1 GB = 1,000,000,000 bytes)
+- BlobUsedCapacityGB    (decimal GB)
+- AccountMaxCapacityGB  (only populated for Standard tier; see Notes)
+- AccountAvailableCapacityGB (max - used, only when max is known)
+
+Writes a CSV to: `PowerShell/output/storage-capacity-export-<yyyyMMdd-HHmmss>.csv`
 
 .EXAMPLE
 ./subscription_storage_capacityusage.ps1
 
 .NOTES
 Prereqs:
-- Azure CLI installed and signed in: az login
+- Azure CLI installed and signed in: `az login`
 - Reader (or higher) on the subscription
-- Optional: select a subscription with: az account set -s <subscription-id>
+- Optional: select a subscription with: `az account set -s <subscription-id>`
+
+Capacity note:
+- Azure Storage account max capacity varies by SKU/features and is not queried by this script.
+- For Standard tier accounts, the script uses a planning constant of 5 PiB as `AccountMaxCapacityGB`.
+    For non-Standard tiers, max/available capacity fields are left blank.
 #>
 
 # ========== Config ==========
@@ -33,6 +47,10 @@ $Interval      = "PT1H"      # UsedCapacity supports PT1H time grain
 $Aggregation   = "Average"   # UsedCapacity is a gauge-like metric; Average is typically used
 $ApiVersionARM = "2023-01-01"
 $ApiVersionMon = "2018-01-01"
+
+# Storage account max capacity is SKU/feature dependent and not directly exposed as a simple property.
+# For Standard GPv2 storage accounts, a commonly used planning limit is 5 PiB.
+$StandardStorageAccountMaxCapacityBytes = 5 * 1024 * 1024 * 1024 * 1024 * 1024
 
 function New-AzMonitorTimespan {
     param(
@@ -139,7 +157,6 @@ function Get-StorageAccountUsedCapacityBytes {
     }
     return $null
 }
-
 # Query Azure Monitor metrics for Blob service "BlobCapacity" (blob-only)
 function Get-BlobCapacityBytes {
     param(
@@ -240,12 +257,31 @@ try {
             $blobGB = [Math]::Round(($blobBytes / 1000000000), 2)
         }
 
+        $maxCapacityBytes = $null
+        if ($sa.sku -and $sa.sku.tier -eq "Standard") {
+            $maxCapacityBytes = [double]$StandardStorageAccountMaxCapacityBytes
+        }
+
+        $maxCapacityGB = $null
+        if ($null -ne $maxCapacityBytes) {
+            $maxCapacityGB = [Math]::Round(($maxCapacityBytes / 1000000000), 2)
+        }
+
+        $availableGB = $null
+        if ($null -ne $maxCapacityBytes -and $null -ne $usedBytes) {
+            $availableBytes = ([double]$maxCapacityBytes - [double]$usedBytes)
+            if ($availableBytes -lt 0) { $availableBytes = 0 }
+            $availableGB = [Math]::Round(($availableBytes / 1000000000), 2)
+        }
+
         $results += [pscustomobject]@{
             StorageAccount = $name
             ResourceGroup  = $resourceGroup
             Location       = $loc
-            UsedCapacityGB = $usedGB
-            BlobCapacityGB = $blobGB
+            AccountUsedCapacityGB = $usedGB
+            BlobUsedCapacityGB = $blobGB
+            AccountAvailableCapacityGB = $availableGB
+            AccountMaxCapacityGB = $maxCapacityGB
         }
     }
 

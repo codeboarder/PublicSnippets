@@ -7,7 +7,7 @@ My small, self-contained scripts and snippets. This code comes with no guarantee
 This repo is a grab-bag of small utilities (primarily PowerShell) that can be run independently. Each script is intended to be:
 
 - Self-contained (minimal dependencies beyond common modules)
-- Parameter-driven (no hardcoded subscription IDs, etc.)
+- Parameter-driven or interactive (no hardcoded subscription IDs, etc.)
 - Safe to copy/paste into other repos when needed
 
 ## Project structure
