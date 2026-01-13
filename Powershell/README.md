@@ -125,7 +125,8 @@ From the `PowerShell/` folder:
 
 ### Output (Storage capacity usage)
 
-- Prints a table with: `StorageAccount`, `ResourceGroup`, `Location`, `UsedCapacityGB`, `BlobCapacityGB`
+- Writes a CSV to: `PowerShell/output/storage-capacity-export-<yyyyMMdd-HHmmss>.csv`
+- Columns include: `StorageAccount`, `ResourceGroup`, `Location`, `UsedCapacityGB`, `BlobCapacityGB`
 
 ## Resource SKU insights (`PowerShell/resource_sku_insights.ps1`)
 

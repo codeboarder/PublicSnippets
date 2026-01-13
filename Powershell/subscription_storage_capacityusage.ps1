@@ -1,17 +1,27 @@
+<#!
+.SYNOPSIS
+Exports Azure Storage capacity metrics (account + blob) to a timestamped CSV.
 
-<#
+.DESCRIPTION
+Uses Azure CLI authentication to obtain an ARM bearer token, enumerates all storage accounts in the current
+subscription, and queries Azure Monitor Metrics to capture:
+
+- UsedCapacity (account scope: Microsoft.Storage/storageAccounts)
+- BlobCapacity (blob service scope: Microsoft.Storage/storageAccounts/blobServices)
+
+Capacity metrics are sampled hourly (PT1H). The script queries a lookback window ($LookbackHours) and returns
+the most recent datapoint per storage account.
+
+Output is written to PowerShell/output as a timestamped CSV.
+
+.EXAMPLE
+./subscription_storage_capacityusage.ps1
+
+.NOTES
 Prereqs:
-- Install Azure CLI and sign in: az login
-- You must have Reader or higher on the subscription(s)
-
-What it does:
-1) Gets an AAD bearer token (for ARM + Monitor).
-2) Lists all storage accounts in the current subscription.
-3) For each storage account, queries Azure Monitor Metrics (UsedCapacity at storage account scope) and (BlobCapacity at blobServices scope).
-4) Emits a formatted table.
-
-If you want to target a specific subscription:
-- Set $SubscriptionId explicitly or run `az account set -s <your-subscription-id>`
+- Azure CLI installed and signed in: az login
+- Reader (or higher) on the subscription
+- Optional: select a subscription with: az account set -s <subscription-id>
 #>
 
 # ========== Config ==========
@@ -239,8 +249,19 @@ try {
         }
     }
 
-    # 3) Output
-    $results | Sort-Object StorageAccount | Format-Table -AutoSize
+    # 3) Output (CSV, like the other scripts)
+    $OutputDir = $PSScriptRoot
+    if (-not $OutputDir) { $OutputDir = (Get-Location).Path }
+    $Timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+    $CsvPath = Join-Path $OutputDir "\\output\\storage-capacity-export-$Timestamp.csv"
+
+    $csvDir = Split-Path -Parent $CsvPath
+    if (-not (Test-Path -Path $csvDir)) {
+        New-Item -ItemType Directory -Path $csvDir -Force | Out-Null
+    }
+
+    $results | Sort-Object StorageAccount | Export-Csv -Path $CsvPath -NoTypeInformation -Encoding UTF8
+    Write-Host "Wrote CSV: $CsvPath" -ForegroundColor Cyan
 
 } catch {
     Write-Error $_
