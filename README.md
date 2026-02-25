@@ -22,5 +22,6 @@ PublicSnippets/
     subscription_nsg_inventory.ps1
     subscription_quota_insights.ps1
     resource_sku_insights.ps1
-    output/ # generated CSV exports
+    mgmtgrp_policyexemptions.ps1
+    /output  # generated CSV exports
 ```
