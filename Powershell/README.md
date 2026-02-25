@@ -9,6 +9,7 @@ My small, self-contained scripts and snippets. This code comes with no guarantee
 - `PowerShell/subscription_nsg_inventory.ps1`: Export NSG inventory + rules to CSV.
 - `PowerShell/subscription_quota_insights.ps1`: Export portal-style usage/quota insights to CSV.
 - `PowerShell/resource_sku_insights.ps1`: Interactive Azure VM SKU insights (by series/region/restriction).
+- `PowerShell/mgmtgrp_policyexemptions.ps1`: Bulk-create Azure Policy exemptions for non-compliant resources under a management group (supports multiple policy assignments; skips if an exemption already exists).
 
 ## Azure Firewall flow log top talkers (`PowerShell/fwflowlog_toptalkers.ps1`)
 
@@ -153,6 +154,39 @@ From the `PowerShell/` folder:
 
 - Writes a CSV to: `PowerShell/output/sku-export-<yyyyMMdd-HHmmss>.csv`
 - Columns include: `Location`, `VmType`, `FilterType`, `Name`, `Restrictions`, `vCPUs`, `MemoryGB`, `MaxNICs`, `AccelNet`, `Architecture`
+
+## Management group policy exemptions (`PowerShell/output/mgmtgrp_policyexemptions.ps1`)
+
+Bulk-creates Azure Policy exemptions for resources currently `NonCompliant` under a management group for **one or more** policy assignments.
+
+The script will **skip** creating a per-resource exemption if an exemption already exists for the same assignment at any of these scopes:
+
+- Management group
+- Subscription
+- Resource group
+- Resource
+
+### Prerequisites (MG policy exemptions)
+
+- PowerShell 7+ recommended
+- Az modules installed:
+  - `Az.Accounts`
+  - `Az.PolicyInsights`
+  - `Az.Resources`
+
+### Run (MG policy exemptions)
+
+This script is configured via variables at the top of the file:
+
+- Set `$ManagementGroupName`
+- Populate `$PolicyAssignmentIds = @("<assignmentId1>", "<assignmentId2>")`
+- Optional: set `$WhatIf = $true` to preview without creating exemptions
+
+From the `PowerShell/` folder:
+
+```powershell
+./output/mgmtgrp_policyexemptions.ps1
+```
 
 ## Generated output
 
